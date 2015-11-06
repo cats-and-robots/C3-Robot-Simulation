@@ -1,5 +1,5 @@
 classdef C3RobotArm < AbstractClassDraw
-    %ROBOTARM Model of a 4 link planar robot arm in 2D. 
+    %ROBOTARM 
     %   Is constructed of 4 Link and 5 Joint objects.
     %   It inherits from abstract class AbstractClassDraw.
     %
