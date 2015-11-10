@@ -791,32 +791,7 @@ classdef C3RobotArm < AbstractClassDraw
             end
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         function jac_M = jacMatrix(obj,joint_angles)
-%             %% A 2x4 matrix, input is joint angles speed and output is a linear transformation matrix 
-%             % that maps robot_position_speed = jac_M * joint_angle_speed  
-%             % It also provides a relationship between joint torques and the 
-%             % resultant force and torque applied by the end-effector:
-%             % joint_torque_force = transpose(jac_M)*end_point_force
-%             L1 = obj.Link_lengths(1);
-%             L2 = obj.Link_lengths(2);
-%             L3 = obj.Link_lengths(3);
-%             L4 = obj.Link_lengths(4);
-%             t1 = joint_angles(1);
-%             t2 = joint_angles(2);
-%             t3 = joint_angles(3);
-%             t4 = joint_angles(4);
-%             jac_M =[-L1*sin(t1)-L2*sin(t1+t2)-L3*sin(t1+t2+t3)-L4*sin(t1+t2+t3+t4), ...
-%                     -L2*sin(t1+t2)-L3*sin(t1+t2+t3)-L4*sin(t1+t2+t3+t4), ...
-%                     -L3*sin(t1+t2+t3)-L4*sin(t1+t2+t3+t4), ...
-%                     -L4*sin(t1+t2+t3+t4) ;
-%                     L1*cos(t1)+L2*cos(t1+t2)+L3*cos(t1+t2+t3)+L4*cos(t1+t2+t3+t4), ...
-%                     L2*cos(t1+t2)+L3*cos(t1+t2+t3)+L4*cos(t1+t2+t3+t4), ...
-%                     L3*cos(t1+t2+t3)+L4*cos(t1+t2+t3+t4), ...
-%                     L4*cos(t1+t2+t3+t4)];
-%         end % end of jacMatrix
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+       
     end
     
     

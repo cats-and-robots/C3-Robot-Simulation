@@ -5,66 +5,30 @@ classdef World < AbstractClassDraw
     
     properties (Access = protected)
         target
+        target_Theta = [deg2rad(-90); 0; 0]; % default target angle
         figure_handle
         axes_handle
-        human
         robot
         
-        objects
-        targets
     end
     properties (Access = public)
-        
-%         human_future
-%         human_mean
-%         
-%         robot_prediction
-%         
-%         dt = 0.1 %Animation timestep (10 frames per second)
-%         %dt = 0.5;
-%         
-%         all_l_star
-%         all_s_hat
-%         all_g
-%         all_mix_gaussian_mean
-%         all_mix_gaussian_Sigma
-%         elapsed_time_array
+
     end % end of properties
     
     methods
         function obj = World(varargin)
             if nargin == 0
-                obj.robot = C3RobotArm();
-            
-            %deep-copy of the objects
+                obj.robot = C3RobotArm(); % created a default right-arm robot
             elseif nargin == 1
-                obj.robot = copy(varargin{1});
-            
-            elseif nargin == 2
-                error('Too many input paramters to constructor!');
-%                 obj.human = copy(varargin{1});
-%                 obj.robot = copy(varargin{2});
-%                 obj.robot_prediction = RobotArm(obj.robot.Origin(1),obj.robot.Origin(2));
-%                 obj.robot_prediction.Controller_goal_position = obj.robot.Controller_goal_position;
-%                 obj.robot_prediction.Controller_goal_speed = obj.robot.Controller_goal_speed;
-% 
-%                 obj.human_future = copy(varargin{1});
-%                 obj.human_mean = copy(varargin{1});
-            
+                if ~isa(varargin{1}, 'C3RobotArm')
+                    error('Input argument is not a C3 robot arm!');
+                end
+                %obj.robot = copy(varargin{1}); %deep-copy
+                obj.robot = varargin{1}; % reference copy
             else
                 error('Too many input paramters to constructor!');
-%                 obj.human = Human;
-%                 obj.robot = RobotArm;
-%                 obj.robot_prediction = RobotArm(obj.robot.Origin(1),obj.robot.Origin(2));
-%                 obj.robot_prediction.Controller_goal_position = obj.robot.Controller_goal_position;
-%                 obj.robot_prediction.Controller_goal_speed = obj.robot.Controller_goal_speed;
-%                 obj.robot_prediction = RobotArm;
-%                 obj.human_future = copy(obj.human);
-%                 obj.human_mean = copy(obj.human);
             end
             
-         
-                        
         
         end % end of constructor
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -112,7 +76,6 @@ classdef World < AbstractClassDraw
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function drawUpdate(obj)
             %DRAW Updates the animation frame for all objects
-
             obj.robot.drawUpdate();
         end % end of draw
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,6 +95,13 @@ classdef World < AbstractClassDraw
             save('plot_view.mat', 'pba', 'dar', 'cva', 'cuv', 'ct', 'cp');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function setRobot(obj, robot)
+            if ~isa(robot, 'C3RobotArm')
+                error('Input argument is not a C3 robot arm!');
+            end
+            obj.robot = robot;
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function setTarget(obj, target)
             obj.check3ColumnVector(target);
             obj.target = target;
@@ -141,92 +111,77 @@ classdef World < AbstractClassDraw
             target = obj.target;
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         function start(obj)
-%             %START Start and run the simulation
-%             nr_of_future_prediction_steps = 10;
-%             
-%             [~,all_timesteps] = obj.human.getAllMeasuredPositionData();
-%             nr_of_human_dimension = numel(obj.human.Center);
-%             nr_of_tables = numel(obj.human.Data_tables);
-%             nr_of_timesteps = numel(all_timesteps);
-%             obj.elapsed_time_array = zeros(nr_of_timesteps ,1);
-% 
-% 
-%             obj.all_g = zeros(nr_of_timesteps,nr_of_future_prediction_steps+1);
-%             obj.all_mix_gaussian_mean = zeros(nr_of_human_dimension, nr_of_timesteps,nr_of_future_prediction_steps+1);
-%             obj.all_mix_gaussian_Sigma = zeros(nr_of_human_dimension, nr_of_human_dimension, nr_of_timesteps,nr_of_future_prediction_steps+1);
-%             obj.all_l_star = zeros(nr_of_tables ,nr_of_timesteps, nr_of_future_prediction_steps+1);
-%             obj.all_s_hat = zeros(nr_of_human_dimension ,nr_of_tables ,nr_of_timesteps, nr_of_future_prediction_steps+1);           
-% 
-% 
-%             t_bar = 1;
-%             do_continue = true;
-%             robot_prediction_has_reached_its_goal = false;
-%             
-%             obj.draw();
-%             while (do_continue)
-%                 t_loopstart=tic();  %Declaring time counter 
-%                 [position, time] = obj.human.getCurrentMeasuredPositionData();
-% 
-%                 [obj.all_g(t_bar,:), obj.all_mix_gaussian_mean(:,t_bar,:), obj.all_mix_gaussian_Sigma(:,:,t_bar,:), ...
-%                     obj.all_l_star(:,t_bar,:), obj.all_s_hat(:,:,t_bar,:)] = ...
-%                     obj.human.prediction_function( position, time, nr_of_future_prediction_steps);
-%                 
-%                 human_update_was_possible = obj.human.update();
-%                 
-%                 [robot_has_reached_its_goal, ~, distance_error] = obj.robot.controllerUpdateOneTimestep();
-%                 fprintf('Distance error: %f \n', distance_error);
-%                 
-%                 
-%                 [~, ~, ~] = obj.robot_prediction.controllerUpdateOneTimestep(); % get to current position
-%                 p_collision_complement = 1;
-%                 
-%                 
-%                 for i = 1:nr_of_future_prediction_steps+1
-%                     estimate_human_mean = obj.all_mix_gaussian_mean(:,t_bar,i)';
-%                     estimate_human_Sigma = obj.all_mix_gaussian_Sigma(:,:,t_bar,i);
-%                     
-%                     pics_probability =  obj.robot_prediction.pics_function(estimate_human_mean, estimate_human_Sigma);
-%                     p_collision_complement = p_collision_complement * (1 -  pics_probability);
-%                     if (~robot_prediction_has_reached_its_goal)
-%                         [robot_prediction_has_reached_its_goal, ~, ~] = obj.robot_prediction.controllerUpdateOneTimestep();
-% 
-%                     end
-%                 end
-%                 
-%                 % Calculate probability of collison with human.
-%                 p_collision = 1 - p_collision_complement;
-%                 
-%                 
-%                 do_continue = human_update_was_possible || ~robot_has_reached_its_goal;
-%                 
-%                 
-%                 obj.human_future.Center = obj.all_mix_gaussian_mean(:,t_bar,end)';
-%                 obj.human_mean.Center = obj.all_mix_gaussian_mean(:,t_bar,1)';
-%                 
-%                 obj.drawUpdate();
-%                
-%                 if (~robot_prediction_has_reached_its_goal)
-%                     obj.robot_prediction.Joint_angles = obj.robot.Joint_angles;
-%                     obj.robot_prediction.Joint_angles_speed = obj.robot.Joint_angles_speed;
-%                     obj.robot_prediction.Endpoint_speed = obj.robot.Endpoint_speed;
-%                     obj.robot_prediction.Controller_err_sum = obj.robot.Controller_err_sum;
-%                     obj.robot_prediction.updateRobotPartsPosition();
-%                 else
-%                     obj.robot_prediction.updateRobotPartsPosition();
-%                     disp('Predction DONE!');
-% 					disp('Hej');
-%                 end
-%                 
-%                 title(sprintf('time: %.1f',t_bar/10))
-%                 el_time=toc(t_loopstart); 
-%                 
-%                 obj.elapsed_time_array(t_bar) = el_time;
-%                 t_bar = t_bar + 1;
-%                 
-%                 pause(obj.dt-el_time);
-%             end
-%         end % end of start
+        function setTargetAngle(obj,target_Theta)
+            obj.check3ColumnVector(target_Theta);
+            obj.target_Theta = target_Theta;
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function target_Theta = getTargetAngle(obj)
+            target_Theta = obj.target_Theta;
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function startSimulation(obj)
+            
+            % Check to see that the target and target angles are set to
+            % something. If setTargetAngle have not been called, then the
+            % default target angle is used (see constructor)
+            obj.check3ColumnVector(obj.target);
+            obj.check3ColumnVector(obj.target_Theta);
+            
+            % get starting joint angles
+            current_joint_angles = obj.robot.getJointAngles();
+            
+            % get target joint angles using the inverse kinematic
+            [target_joint_angles, joint_angle_solutions, flag_joint_angle_solutions] = ...
+                 obj.robot.inverseKinematic(obj.target, obj.target_Theta, current_joint_angles);            
+    
+            dt = 1/10; % update world every 1/10 of a second = 10 fps 
+            t = 0; % time parameter
+             
+            % This method is pretty naive and can be improved 
+            % I am now dividing the angle difference in 100 and will 
+            % update every angle with this difference for each iteration
+            n = 100;  
+            d_j = (target_joint_angles - current_joint_angles) / n;
+            
+            obj.draw(); % draw the world
+            
+            do_continue = true; 
+            while (do_continue)
+                t_loopstart=tic();  %Declaring time counter 
+                
+                % This method is pretty naive and can be improved 
+                % I am now dividing the angle difference in 100 and will 
+                % update every angle with this difference for each iteration
+                current_joint_angles = current_joint_angles + d_j;
+                
+                % update position of robot arm using forward kinematics
+                obj.robot.forwardKinematic(current_joint_angles, true);
+                
+                % update the draw plot
+                obj.drawUpdate(); 
+                
+                % This method is pretty naive and can be improved
+                % if the difference between the target and current joint
+                % angles are small enough we have reached the target and
+                % will change the while loop parameter to false
+                if sum(abs(target_joint_angles - current_joint_angles)) < 1e-5
+                    do_continue = false;
+                end
+                
+                t = t + dt; % increment time counter
+                title(sprintf('time: %.1f',t )) % update plot title
+                elapsed_time=toc(t_loopstart); 
+
+                % pause the program long enough in order to get the frame
+                % rate indicated by dt
+                pause( (dt - elapsed_time) ); 
+                
+            end
+            
+            fprintf('TARGET REACHED!\n')
+            
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end % end of methods
     

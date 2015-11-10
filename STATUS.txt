@@ -1,3 +1,11 @@
+Update v3.0
+2015-11-10
+* Added method startSimulation() in class World which draws the simulation. For more details, see main.m and method start Simulation in class World.
+* Robot controller is put inside startSimulation() for easy accessing
+* Class World will now only save the references of the robot, allow one to
+work with a C3RobotArm object outside of the class World.
+* Removed old comments
+
 Update v2.0
 2015-10-29
 Major updates and cleaned up most of the old code and changed the classes' help messages.
